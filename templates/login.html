@@ -1,0 +1,111 @@
+{% extends "base.html" %} {% block title %}Login - Text-to-SQL Generator{%
+endblock %} {% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Welcome Back</h1>
+      <p>Log in to your account to continue</p>
+    </div>
+
+    <form id="loginForm" class="auth-form">
+      <div class="form-group">
+        <label for="username">Username or Email</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-input"
+          placeholder="Enter your username or email"
+          required
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-input"
+          placeholder="Enter your password"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+
+      <div id="errorMessage" class="error-message hidden"></div>
+
+      <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+        <span class="btn-text">Log In</span>
+        <span class="btn-loader hidden"></span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>
+        Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginForm = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+    const errorMessage = document.getElementById("errorMessage");
+    const btnText = loginBtn.querySelector(".btn-text");
+    const btnLoader = loginBtn.querySelector(".btn-loader");
+
+    loginForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      // Reset error message
+      errorMessage.classList.add("hidden");
+      errorMessage.textContent = "";
+
+      // Disable button and show loader
+      loginBtn.disabled = true;
+      btnText.classList.add("hidden");
+      btnLoader.classList.remove("hidden");
+
+      try {
+        const response = await fetch('{{ url_for("login") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Redirect to home page
+          window.location.href = '{{ url_for("index") }}';
+        } else {
+          // Show error message
+          errorMessage.textContent =
+            data.error || "Login failed. Please try again.";
+          errorMessage.classList.remove("hidden");
+        }
+      } catch (error) {
+        errorMessage.textContent = "An error occurred. Please try again.";
+        errorMessage.classList.remove("hidden");
+      } finally {
+        // Re-enable button and hide loader
+        loginBtn.disabled = false;
+        btnText.classList.remove("hidden");
+        btnLoader.classList.add("hidden");
+      }
+    });
+  });
+</script>
+{% endblock %}

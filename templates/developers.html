@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Developers - Text-to-SQL Generator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Meet Our Team</h1>
+        <p class="page-subtitle">The talented developers behind Text-to-SQL Generator</p>
+    </div>
+
+    <div class="team-grid">
+        <div class="team-card">
+            <div class="team-card-image">
+                <img src="{{ url_for('static', filename='images/aftab-shahzad.png') }}" alt="Aftab Shahzad"
+                    class="team-avatar"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="avatar-placeholder" style="display: none;">AS</div>
+            </div>
+            <div class="team-card-content">
+                <h3>Aftab Shahzad</h3>
+                <p class="team-role">Lead Developer</p>
+                <p class="team-bio">Full-stack developer with 3+ Months of experience in web applications and AI
+                    integration. Passionate about creating intuitive user experiences.</p>
+                <div class="team-skills">
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">Flask</span>
+                    <span class="skill-tag">AI/ML</span>
+                    <span class="skill-tag">SQL</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-card">
+            <div class="team-card-image">
+                <img src="{{ url_for('static', filename='images/muhammad-usman.png') }}" alt="Muhammad Usman"
+                    class="team-avatar"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="avatar-placeholder" style="display: none;">MU</div>
+            </div>
+            <div class="team-card-content">
+                <h3>Muhammad Usman</h3>
+                <p class="team-role">Frontend Developer</p>
+                <p class="team-bio">UI/UX specialist focused on creating beautiful, responsive interfaces. Expert in
+                    modern CSS and JavaScript frameworks.</p>
+                <div class="team-skills">
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">CSS</span>
+                    <span class="skill-tag">React</span>
+                    <span class="skill-tag">Design</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-card">
+            <div class="team-card-image">
+                <img src="{{ url_for('static', filename='images/hamza-riaz.png') }}" alt="Hamza Riaz"
+                    class="team-avatar"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="avatar-placeholder" style="display: none;">HR</div>
+            </div>
+            <div class="team-card-content">
+                <h3>Hamza Riaz</h3>
+                <p class="team-role">AI Engineer</p>
+                <p class="team-bio">Machine learning engineer specializing in NLP and language models. Responsible for
+                    optimizing AI query generation accuracy.</p>
+                <div class="team-skills">
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">NLP</span>
+                    <span class="skill-tag">TensorFlow</span>
+                    <span class="skill-tag">LLMs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mission-section">
+        <h2>Our Mission</h2>
+        <p>We're passionate about making database querying accessible to everyone. Our goal is to bridge the gap between
+            natural language and SQL, enabling users to interact with databases using plain English. Through innovative
+            AI technology, we're transforming how people work with data.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,303 @@
+{% extends "base.html" %} {% block extra_head %}
+<link
+  href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Poppins", sans-serif;
+    overflow-x: hidden;
+  }
+
+  .welcome-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1.5rem 0 1rem 0;
+    overflow: hidden;
+  }
+
+  /* Animated background particles */
+  .bg-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    animation: floatParticle 15s infinite ease-in-out;
+  }
+
+  .particle:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  .particle:nth-child(2) {
+    width: 120px;
+    height: 120px;
+    top: 60%;
+    right: 15%;
+    animation-delay: 2s;
+  }
+
+  .particle:nth-child(3) {
+    width: 60px;
+    height: 60px;
+    bottom: 20%;
+    left: 20%;
+    animation-delay: 4s;
+  }
+
+  .particle:nth-child(4) {
+    width: 100px;
+    height: 100px;
+    top: 40%;
+    right: 30%;
+    animation-delay: 6s;
+  }
+
+  @keyframes floatParticle {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translate(30px, -50px) scale(1.2);
+      opacity: 0.5;
+    }
+  }
+
+  .welcome-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 900px;
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    margin-top: 2.5vh;
+    animation: fadeInUp 1s ease-out;
+  }
+
+  .welcome-title {
+    font-family: "Dancing Script", cursive;
+    font-size: clamp(4rem, 12vw, 8rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: linear-gradient(
+      135deg,
+      #4dabf7 0%,
+      #667eea 20%,
+      #764ba2 40%,
+      #f093fb 60%,
+      #ff9a9e 80%,
+      #feca57 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite, fadeInUp 1s ease-out 0.3s both;
+    filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.2));
+    position: relative;
+    display: inline-block;
+    letter-spacing: 2px;
+  }
+
+  .welcome-title::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.5),
+      transparent
+    );
+    border-radius: 2px;
+  }
+
+  @keyframes gradientShift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .project-by {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    font-weight: 300;
+    letter-spacing: 1px;
+    animation: fadeInUp 1s ease-out 0.6s both;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .project-tagline {
+    font-size: clamp(1.3rem, 3vw, 2rem);
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    animation: fadeInUp 1s ease-out 0.9s both;
+    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Underline beneath welcome title: always white */
+  .welcome-title::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.5),
+      transparent
+    );
+  }
+
+  .get-started-btn {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    color: #667eea;
+    border: none;
+    padding: 1.3rem 4rem;
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    font-family: "Poppins", sans-serif;
+    letter-spacing: 1px;
+    animation: fadeInUp 1s ease-out 1.2s both;
+    z-index: 1;
+  }
+
+  .get-started-btn:hover {
+    background: linear-gradient(135deg, #f0f0f0 0%, #e9ecef 100%);
+    color: #333366;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  .get-started-btn:active {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(0) scale(0.98);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%,
+    100% {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3),
+        0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    50% {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3),
+        0 0 0 15px rgba(255, 255, 255, 0);
+    }
+  }
+
+  /* Dark theme support */
+  .dark-theme .welcome-page {
+    background: var(--bg-primary);
+  }
+
+  .dark-theme .welcome-title {
+    filter: drop-shadow(0 4px 20px rgba(255, 255, 255, 0.1));
+  }
+
+  .dark-theme .particle {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .welcome-content {
+      padding: 2rem 1rem;
+    }
+
+    .get-started-btn {
+      padding: 1.1rem 3rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .welcome-content {
+      padding: 1.5rem 1rem;
+    }
+
+    .get-started-btn {
+      padding: 1rem 2.5rem;
+      font-size: 1rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="welcome-page">
+  <div class="bg-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="welcome-content">
+    <h1 class="welcome-title">Welcome Back</h1>
+    <p class="project-by">A project by AIHS Students</p>
+    <p class="project-tagline">SQL Query Generation and Execution</p>
+    <button
+      class="get-started-btn"
+      onclick="window.location.href='{{ url_for('login') }}'"
+    >
+      <span>Get Started →</span>
+    </button>
+  </div>
+</div>
+<script>
+  // Load saved theme preference
+  const savedTheme = localStorage.getItem("theme") || "light";
+  if (savedTheme === "dark") {
+    document.body.classList.remove("light-theme");
+    document.body.classList.add("dark-theme");
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Text-to-SQL Generator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-section">
+        <h1 class="hero-title">Transform Natural Language into SQL</h1>
+        <p class="hero-subtitle">Upload your database schema and ask questions in plain English. Our AI will generate the SQL queries for you.</p>
+    </div>
+
+    <div class="main-interface">
+        <div class="interface-grid">
+            <!-- Schema Upload Section -->
+            <div class="card schema-section">
+                <h2>Database Schema</h2>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <input type="file" id="schemaFile" accept=".sql" hidden>
+                    <div class="upload-content">
+                        <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p class="upload-text">Click to upload or drag and drop</p>
+                        <p class="upload-hint">SQL schema file (.sql)</p>
+                    </div>
+                </div>
+                <div id="fileInfo" class="file-info hidden">
+                    <div class="file-info-content">
+                        <span class="file-name" id="fileName"></span>
+                        <button class="btn-remove" id="removeFile">×</button>
+                    </div>
+                </div>
+                <div id="schemaPreview" class="schema-preview hidden">
+                    <h3>Schema Preview</h3>
+                    <pre id="schemaContent"></pre>
+                </div>
+            </div>
+
+            <!-- Query Input Section -->
+            <div class="card query-section">
+                <h2>Natural Language Query</h2>
+                <textarea 
+                    id="naturalLanguageQuery" 
+                    class="query-input" 
+                    placeholder="Enter your question in natural language...&#10;&#10;Example: Show me all customers who made purchases over $1000"
+                    rows="6"
+                ></textarea>
+                
+                <div class="model-selection">
+                    <label for="aiModel">AI Model:</label>
+                    <select id="aiModel" class="model-select">
+                        <option value="llama3.2:3b" selected>Llama 3.2 3B (Recommended - Low Memory ~2GB)</option>
+                        <option value="llama3">Llama 3 (Full - Requires 4.6GB+ RAM)</option>
+                        <option value="llama3:latest">Llama 3 Latest</option>
+                        <option value="llama3.2">Llama 3.2 (Full)</option>
+                        <option value="mistral:7b">Mistral 7B (~4GB RAM)</option>
+                        <option value="mistral">Mistral (Full)</option>
+                        <option value="codellama:7b">CodeLlama 7B</option>
+                    </select>
+                </div>
+
+                <button id="generateSqlBtn" class="btn btn-primary btn-generate" disabled>
+                    <span class="btn-text">Generate SQL</span>
+                    <span class="btn-loader hidden"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="results-section hidden">
+            <div class="card">
+                <h2>Generated SQL Query</h2>
+                <div class="sql-display">
+                    <pre id="generatedSql" class="sql-code"></pre>
+                    <button id="copySqlBtn" class="btn-copy" title="Copy to clipboard">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+                <button id="executeSqlBtn" class="btn btn-secondary btn-execute">
+                    <span class="btn-text">Execute Query</span>
+                    <span class="btn-loader hidden"></span>
+                </button>
+            </div>
+
+            <div id="executionResults" class="card hidden">
+                <h2>Query Results</h2>
+                <div class="results-container">
+                    <div id="resultsTable" class="results-table"></div>
+                    <div id="resultsMessage" class="results-message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // File upload handling
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const schemaFile = document.getElementById('schemaFile');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const removeFile = document.getElementById('removeFile');
+    const schemaPreview = document.getElementById('schemaPreview');
+    const schemaContent = document.getElementById('schemaContent');
+    let currentSchemaContent = '';
+
+    fileUploadArea.addEventListener('click', () => schemaFile.click());
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+    });
+    fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.classList.remove('dragover');
+    });
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) handleFile(files[0]);
+    });
+    schemaFile.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleFile(e.target.files[0]);
+    });
+    removeFile.addEventListener('click', () => {
+        schemaFile.value = '';
+        fileInfo.classList.add('hidden');
+        schemaPreview.classList.add('hidden');
+        currentSchemaContent = '';
+        updateGenerateButton();
+    });
+
+    function handleFile(file) {
+        if (!file.name.endsWith('.sql')) {
+            showNotification('Please upload a .sql file', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            currentSchemaContent = e.target.result;
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('hidden');
+            schemaPreview.classList.remove('hidden');
+            schemaContent.textContent = currentSchemaContent.substring(0, 500) + (currentSchemaContent.length > 500 ? '...' : '');
+            updateGenerateButton();
+        };
+        reader.readAsText(file);
+    }
+
+    // Query generation
+    const naturalLanguageQuery = document.getElementById('naturalLanguageQuery');
+    const aiModel = document.getElementById('aiModel');
+    const generateSqlBtn = document.getElementById('generateSqlBtn');
+    const generatedSql = document.getElementById('generatedSql');
+    const resultsSection = document.getElementById('resultsSection');
+    const copySqlBtn = document.getElementById('copySqlBtn');
+    const executeSqlBtn = document.getElementById('executeSqlBtn');
+    const executionResults = document.getElementById('executionResults');
+    const resultsTable = document.getElementById('resultsTable');
+    const resultsMessage = document.getElementById('resultsMessage');
+
+    function updateGenerateButton() {
+        generateSqlBtn.disabled = !currentSchemaContent.trim() || !naturalLanguageQuery.value.trim();
+    }
+
+    naturalLanguageQuery.addEventListener('input', updateGenerateButton);
+
+    generateSqlBtn.addEventListener('click', async () => {
+        if (!currentSchemaContent || !naturalLanguageQuery.value.trim()) return;
+        
+        generateSqlBtn.disabled = true;
+        generateSqlBtn.querySelector('.btn-text').classList.add('hidden');
+        generateSqlBtn.querySelector('.btn-loader').classList.remove('hidden');
+        
+        try {
+            const response = await fetch('/api/generate-sql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: naturalLanguageQuery.value,
+                    schema: currentSchemaContent,
+                    model: aiModel.value
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                generatedSql.textContent = data.sql;
+                resultsSection.classList.remove('hidden');
+                executionResults.classList.add('hidden');
+                
+                // Animate results section appearance
+                setTimeout(() => {
+                    resultsSection.style.opacity = '0';
+                    resultsSection.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        resultsSection.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                        resultsSection.style.opacity = '1';
+                        resultsSection.style.transform = 'translateY(0)';
+                    }, 50);
+                }, 50);
+                
+                showNotification('SQL generated successfully!', 'success');
+            } else {
+                showNotification(data.error || 'Failed to generate SQL', 'error');
+            }
+        } catch (error) {
+            showNotification('Error generating SQL: ' + error.message, 'error');
+        } finally {
+            generateSqlBtn.disabled = false;
+            generateSqlBtn.querySelector('.btn-text').classList.remove('hidden');
+            generateSqlBtn.querySelector('.btn-loader').classList.add('hidden');
+        }
+    });
+
+    // Copy SQL
+    copySqlBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(generatedSql.textContent).then(() => {
+            showNotification('SQL copied to clipboard!', 'success');
+        });
+    });
+
+    // Execute SQL
+    executeSqlBtn.addEventListener('click', async () => {
+        const sql = generatedSql.textContent.trim();
+        if (!sql || !currentSchemaContent) return;
+        
+        executeSqlBtn.disabled = true;
+        executeSqlBtn.querySelector('.btn-text').classList.add('hidden');
+        executeSqlBtn.querySelector('.btn-loader').classList.remove('hidden');
+        
+        try {
+            const response = await fetch('/api/execute-sql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sql: sql,
+                    schema: currentSchemaContent
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                executionResults.classList.remove('hidden');
+                resultsMessage.textContent = '';
+                resultsTable.innerHTML = '';
+                
+                if (data.columns && data.columns.length > 0) {
+                    // Display table
+                    let tableHTML = '<table><thead><tr>';
+                    data.columns.forEach(col => {
+                        tableHTML += `<th>${escapeHtml(col)}</th>`;
+                    });
+                    tableHTML += '</tr></thead><tbody>';
+                    data.results.forEach((row, rowIndex) => {
+                        tableHTML += `<tr style="animation: fadeIn 0.3s ease-out ${rowIndex * 0.05}s both; opacity: 0;">`;
+                        data.columns.forEach(col => {
+                            tableHTML += `<td>${escapeHtml(row[col] !== null ? row[col] : 'NULL')}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                    });
+                    tableHTML += '</tbody></table>';
+                    resultsTable.innerHTML = tableHTML;
+                } else {
+                    resultsMessage.textContent = data.results.message || 'Query executed successfully';
+                }
+                
+                // Animate execution results appearance
+                setTimeout(() => {
+                    executionResults.style.opacity = '0';
+                    executionResults.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        executionResults.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                        executionResults.style.opacity = '1';
+                        executionResults.style.transform = 'translateY(0)';
+                    }, 50);
+                }, 50);
+                
+                showNotification('Query executed successfully!', 'success');
+            } else {
+                showNotification(data.error || 'Failed to execute query', 'error');
+            }
+        } catch (error) {
+            showNotification('Error executing query: ' + error.message, 'error');
+        } finally {
+            executeSqlBtn.disabled = false;
+            executeSqlBtn.querySelector('.btn-text').classList.remove('hidden');
+            executeSqlBtn.querySelector('.btn-loader').classList.add('hidden');
+        }
+    });
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+{% endblock %}
+

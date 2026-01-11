@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - Text-to-SQL Generator{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>Create Account</h1>
+            <p>Sign up to get started with Text-to-SQL Generator</p>
+        </div>
+        
+        <form id="signupForm" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-input" 
+                    placeholder="Choose a username"
+                    required
+                    autocomplete="username"
+                    minlength="3"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input" 
+                    placeholder="Enter your email"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Create a password (min. 6 characters)"
+                    required
+                    autocomplete="new-password"
+                    minlength="6"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <input 
+                    type="password" 
+                    id="confirm_password" 
+                    name="confirm_password" 
+                    class="form-input" 
+                    placeholder="Confirm your password"
+                    required
+                    autocomplete="new-password"
+                    minlength="6"
+                >
+            </div>
+            
+            <div id="errorMessage" class="error-message hidden"></div>
+            
+            <button type="submit" class="btn btn-primary btn-full" id="signupBtn">
+                <span class="btn-text">Create Account</span>
+                <span class="btn-loader hidden"></span>
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const signupForm = document.getElementById('signupForm');
+    const signupBtn = document.getElementById('signupBtn');
+    const errorMessage = document.getElementById('errorMessage');
+    const btnText = signupBtn.querySelector('.btn-text');
+    const btnLoader = signupBtn.querySelector('.btn-loader');
+    
+    // Real-time password match validation
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function validatePasswords() {
+        if (confirmPassword.value && password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+    
+    password.addEventListener('input', validatePasswords);
+    confirmPassword.addEventListener('input', validatePasswords);
+    
+    signupForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const passwordValue = password.value;
+        const confirmPasswordValue = confirmPassword.value;
+        
+        // Reset error message
+        errorMessage.classList.add('hidden');
+        errorMessage.textContent = '';
+        
+        // Disable button and show loader
+        signupBtn.disabled = true;
+        btnText.classList.add('hidden');
+        btnLoader.classList.remove('hidden');
+        
+        try {
+            const response = await fetch('{{ url_for("signup") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: passwordValue,
+                    confirm_password: confirmPasswordValue
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Redirect to home page (user is auto-logged in)
+                window.location.href = '{{ url_for("index") }}';
+            } else {
+                // Show error message
+                errorMessage.textContent = data.error || 'Signup failed. Please try again.';
+                errorMessage.classList.remove('hidden');
+            }
+        } catch (error) {
+            errorMessage.textContent = 'An error occurred. Please try again.';
+            errorMessage.classList.remove('hidden');
+        } finally {
+            // Re-enable button and hide loader
+            signupBtn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnLoader.classList.add('hidden');
+        }
+    });
+});
+</script>
+{% endblock %}
+

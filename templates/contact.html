@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Contact - Text-to-SQL Generator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Get In Touch</h1>
+        <p class="page-subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+    </div>
+
+    <div class="contact-layout">
+        <div class="contact-info-section">
+            <h2>Contact Information</h2>
+            <div class="contact-item">
+                <div class="contact-icon">📧</div>
+                <div>
+                    <h3>Email</h3>
+                    <p>support@texttosql.com</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">📞</div>
+                <div>
+                    <h3>Phone</h3>
+                    <p>+1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">💬</div>
+                <div>
+                    <h3>Live Chat</h3>
+                    <p>Available 24/7</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">📍</div>
+                <div>
+                    <h3>Address</h3>
+                    <p>123 Tech Street<br>San Francisco, CA 94105<br>United States</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="contact-form-section">
+            <h2>Send Us a Message</h2>
+            <form id="contactForm" class="contact-form">
+                <div class="form-group">
+                    <label for="contactName">Name <span class="required">*</span></label>
+                    <input type="text" id="contactName" name="name" required>
+                    <span class="error-message" id="nameError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactEmail">Email <span class="required">*</span></label>
+                    <input type="email" id="contactEmail" name="email" required>
+                    <span class="error-message" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactSubject">Subject</label>
+                    <input type="text" id="contactSubject" name="subject">
+                    <span class="error-message" id="subjectError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactMessage">Message <span class="required">*</span></label>
+                    <textarea id="contactMessage" name="message" rows="6" required></textarea>
+                    <span class="error-message" id="messageError"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-submit">
+                    <span class="btn-text">Send Message</span>
+                    <span class="btn-loader hidden"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const contactForm = document.getElementById('contactForm');
+    const submitBtn = contactForm.querySelector('.btn-submit');
+
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Clear previous errors
+        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+        document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
+        
+        // Get form data
+        const formData = {
+            name: document.getElementById('contactName').value.trim(),
+            email: document.getElementById('contactEmail').value.trim(),
+            subject: document.getElementById('contactSubject').value.trim(),
+            message: document.getElementById('contactMessage').value.trim()
+        };
+        
+        // Client-side validation
+        let hasError = false;
+        
+        if (!formData.name) {
+            showFieldError('contactName', 'Name is required');
+            hasError = true;
+        }
+        
+        if (!formData.email) {
+            showFieldError('contactEmail', 'Email is required');
+            hasError = true;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            showFieldError('contactEmail', 'Invalid email format');
+            hasError = true;
+        }
+        
+        if (!formData.message) {
+            showFieldError('contactMessage', 'Message is required');
+            hasError = true;
+        }
+        
+        if (hasError) return;
+        
+        // Submit form
+        submitBtn.disabled = true;
+        submitBtn.querySelector('.btn-text').classList.add('hidden');
+        submitBtn.querySelector('.btn-loader').classList.remove('hidden');
+        
+        try {
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification(data.message || 'Message sent successfully!', 'success');
+                contactForm.reset();
+            } else {
+                showNotification(data.error || 'Failed to send message', 'error');
+            }
+        } catch (error) {
+            showNotification('Error sending message: ' + error.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.querySelector('.btn-text').classList.remove('hidden');
+            submitBtn.querySelector('.btn-loader').classList.add('hidden');
+        }
+    });
+    
+    function showFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        const errorEl = document.getElementById(fieldId.replace('contact', '') + 'Error');
+        field.closest('.form-group').classList.add('error');
+        if (errorEl) errorEl.textContent = message;
+    }
+</script>
+{% endblock %}
+
